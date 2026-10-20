@@ -12,10 +12,12 @@ class Genre extends Model
 {
     // ダミーデータ作成用のFactoryを利用可能にする
     use HasFactory;
+
     // ジャンル名をまとめて登録・更新可能にする
     protected $fillable = [
         'name', // ジャンル名
     ];
+
     // book_genreを介してジャンルと書籍を関連付ける
     public function books(): BelongsToMany
     {

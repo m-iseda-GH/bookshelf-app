@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+// Factory（テスト用データを作る仕組み）を利用する機能を読み込む
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-// 複数の登録書籍との関連付けを表す型を読み込む
-use Illuminate\Database\Eloquent\Relations\HasMany;
-// 中間テーブルを使う関連付けの型を読み込む
+// 中間テーブルを使うお気に入り・いいねの関連付けを表す型を読み込む
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+// ユーザーが登録した複数の書籍・レビューとの関連付けを表す型を読み込む
+use Illuminate\Database\Eloquent\Relations\HasMany;
+// 認証用のUserクラスをAuthenticatableという別名で読み込む
+use Illuminate\Foundation\Auth\User as Authenticatable;
+// ユーザーへの通知を扱う機能を読み込む
+use Illuminate\Notifications\Notifiable;
+// SanctumのAPIトークンを扱う機能を読み込む
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
@@ -37,16 +40,19 @@ class User extends Authenticatable
     {
         return $this->hasMany(Book::class);
     }
+
     // ユーザーと投稿したレビュー一覧の関連付けを定義する
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
     }
+
     // favoritesを介してユーザーとお気に入り書籍を関連付ける
     public function favoriteBooks(): BelongsToMany
     {
         return $this->belongsToMany(Book::class, 'favorites');
     }
+
     // ユーザーがいいねしたレビューとの関連付けを定義する
     public function likedReviews(): BelongsToMany
     {
