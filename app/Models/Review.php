@@ -36,7 +36,7 @@ class Review extends Model
     }
 
     // このレビューにいいねしたユーザーとの関連付けを定義する
-    public function likedBy(): BelongsToMany
+    public function likedByUsers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'review_likes');
     }

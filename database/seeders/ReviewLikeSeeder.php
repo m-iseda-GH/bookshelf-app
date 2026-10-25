@@ -31,7 +31,7 @@ class ReviewLikeSeeder extends Seeder
                 ->all();
 
             // 既存のいいねを残しながら、未登録の組み合わせを追加する
-            $review->likedBy()->syncWithoutDetaching($userIds);
+            $review->likedByUsers()->syncWithoutDetaching($userIds);
         }
     }
 }
