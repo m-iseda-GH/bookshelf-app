@@ -10,8 +10,6 @@ use App\Models\Book;
 use App\Models\Genre;
 // 別の画面へ移動する処理の戻り値の型を読み込む
 use Illuminate\Http\RedirectResponse;
-// 更新時に送信された入力内容を扱うクラスを読み込む
-use Illuminate\Http\Request;
 // 複数の保存処理をまとめて扱う機能を読み込む
 use Illuminate\Support\Facades\DB;
 // 画面を返す処理の戻り値の型を読み込む
@@ -96,16 +94,59 @@ class BookController extends Controller
         ]);
     }
 
-    // 書籍編集画面を表示する
-    public function edit(Book $book)
+    // 登録者本人に、書籍の編集画面を表示する
+    public function edit(Book $book): View
     {
-        // 後の工程で実装する
+        // BookPolicyのupdate()で、登録者本人かを確認する
+        $this->authorize('update', $book);
+
+        // 書籍に現在関連付けられているジャンルを取得する
+        $book->load('genres');
+
+        // チェックボックスの選択肢として、全ジャンルを取得する
+        $genres = Genre::all();
+
+        // 日付入力欄に年月日を表示するため、この書籍の出版日を文字列として扱う
+        $book->mergeCasts([
+            'published_date' => 'string',
+        ]);
+
+        // 編集対象の書籍とジャンル一覧を、編集画面へ渡す
+        return view('books.edit', [
+            'book' => $book,
+            'genres' => $genres,
+        ]);
     }
 
-    // 書籍の登録内容を更新する
-    public function update(Request $request, Book $book)
+    // 登録者本人が、書籍情報とジャンルの関連付けを更新する
+    public function update(BookRequest $request, Book $book): RedirectResponse
     {
-        // 後の工程で実装する
+        // BookPolicyのupdate()で、登録者本人かを確認する
+        $this->authorize('update', $book);
+
+        // BookRequestの入力チェックを通過した値を取得する
+        $validated = $request->validated();
+
+        // 書籍情報とジャンルの変更を、まとめて成功・取り消しする
+        DB::transaction(function () use ($book, $validated) {
+            // 入力内容で書籍情報を更新する
+            $book->update([
+                'title' => $validated['title'],
+                'author' => $validated['author'],
+                'isbn' => $validated['isbn'],
+                'published_date' => $validated['published_date'],
+                // 任意項目が未設定の場合は、nullで保存する
+                'description' => $validated['description'] ?? null,
+                'image_url' => $validated['image_url'] ?? null,
+            ]);
+
+            // 書籍のジャンルを、今回選択された内容にそろえる
+            $book->genres()->sync($validated['genres']);
+        });
+
+        // 更新完了のメッセージを付けて、書籍詳細へ移動する
+        return redirect()->route('books.show', $book)
+            ->with('success', '書籍を更新しました。');
     }
 
     // 書籍を削除する
