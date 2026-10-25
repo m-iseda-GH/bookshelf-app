@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('author', 255);
             // ISBN（13文字用の列・同じISBNの重複を禁止）
             $table->char('isbn', 13)->unique();
-            //出版日（基本設計ではNULLを許可しない）
+            // 出版日（基本設計ではNULLを許可しない）
             $table->date('published_date');
             // 書籍の説明（任意入力）
             $table->text('description')->nullable();

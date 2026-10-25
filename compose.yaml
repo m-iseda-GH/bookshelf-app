@@ -9,8 +9,9 @@ services:
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:
-            - '${APP_PORT:-80}:80'
-            - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
+            # MySQLの接続を、このPC内に限定する
+            - '127.0.0.1:${FORWARD_DB_PORT:-3306}:3306'
+            
         environment:
             WWWUSER: '${WWWUSER}'
             LARAVEL_SAIL: 1
@@ -26,7 +27,8 @@ services:
     mysql:
         image: 'mysql:8.4'
         ports:
-            - '${FORWARD_DB_PORT:-3306}:3306'
+            # MySQLの接続を、このPC内に限定する
+         - '127.0.0.1:${FORWARD_DB_PORT:-3306}:3306'
         environment:
             MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
             MYSQL_ROOT_HOST: '%'
@@ -51,7 +53,8 @@ services:
     phpmyadmin:
         image: 'phpmyadmin:latest'
         ports:
-            - '${FORWARD_PHPMYADMIN_PORT:-8080}:80'
+            # phpMyAdminの接続を、このPC内に限定する
+            - '127.0.0.1:${FORWARD_PHPMYADMIN_PORT:-8080}:80'
         environment:
             PMA_HOST: mysql
             PMA_USER: '${DB_USERNAME}'
