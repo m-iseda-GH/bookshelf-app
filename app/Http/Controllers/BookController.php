@@ -149,9 +149,17 @@ class BookController extends Controller
             ->with('success', '書籍を更新しました。');
     }
 
-    // 書籍を削除する
-    public function destroy(Book $book)
+    // 登録者本人が書籍を削除する
+    public function destroy(Book $book): RedirectResponse
     {
-        // 後の工程で実装する
+        // BookPolicyのdelete()で、登録者本人かを確認する
+        $this->authorize('delete', $book);
+
+        // 対象の書籍をデータベースから削除する
+        $book->delete();
+
+        // 削除完了のメッセージを付けて、書籍一覧へ移動する
+        return redirect()->route('books.index')
+            ->with('success', '書籍を削除しました。');
     }
 }
