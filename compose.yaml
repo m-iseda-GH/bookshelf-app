@@ -5,7 +5,7 @@ services:
             dockerfile: Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
-        image: 'sail-8.5/app'
+        image: 'bookshelf-app/php85'
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:
@@ -20,7 +20,8 @@ services:
             XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
             IGNITION_LOCAL_SITES_PATH: '${PWD}'
         volumes:
-            - '.:/var/www/html'
+         - '.:/var/www/html'
+         - './docker/php/99-security.ini:/etc/php/8.5/cli/conf.d/99-security.ini:ro'
         networks:
             - sail
         depends_on:
