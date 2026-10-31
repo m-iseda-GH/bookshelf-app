@@ -16,4 +16,11 @@ class ReviewPolicy
         // 操作するユーザーのIDと、レビュー投稿者のIDが一致するかを確認する
         return $user->id === $review->user_id;
     }
+
+    // 投稿者本人に、レビューの削除を許可する
+    public function delete(User $user, Review $review): bool
+    {
+        // 操作するユーザーのIDと、レビュー投稿者のIDが一致するかを確認する
+        return $user->id === $review->user_id;
+    }
 }

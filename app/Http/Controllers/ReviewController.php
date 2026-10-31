@@ -83,10 +83,22 @@ class ReviewController extends Controller
             ->with('success', 'レビューを更新しました。');
     }
 
-    // レビューを削除する
-    public function destroy(Review $review)
+    // 投稿者本人がレビューを削除する
+    public function destroy(Review $review): RedirectResponse
     {
-        // 削除処理は、レビュー機能の工程で実装する
+        // ReviewPolicyのdelete()で、投稿者本人かを確認する
+        $this->authorize('delete', $review);
+
+        // 削除後の移動先に使う書籍IDを控える
+        $bookId = $review->book_id;
+
+        // 対象のレビューをデータベースから削除する
+        // 関連するいいねは、DBの外部キー設定により一緒に削除される
+        $review->delete();
+
+        // 削除完了のメッセージを付けて、対象の書籍詳細画面へ移動する
+        return redirect()->route('books.show', $bookId)
+            ->with('success', 'レビューを削除しました。');
     }
 
     // レビューへのいいねを登録・解除する
