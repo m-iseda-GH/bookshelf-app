@@ -10,10 +10,12 @@ use App\Models\Book;
 use App\Models\Review;
 // 別の画面へ移動する処理の戻り値の型を読み込む
 use Illuminate\Http\RedirectResponse;
-// 更新・いいねの処理で、送信内容やログインユーザーを取得する
+// 送信内容やログインユーザーを取得するクラスを読み込む
 use Illuminate\Http\Request;
 // 入力エラーとしてメッセージを返すための例外を読み込む
 use Illuminate\Validation\ValidationException;
+// 画面を返す処理の戻り値の型を読み込む
+use Illuminate\View\View;
 
 // レビューの投稿・編集・削除・いいねを扱う
 class ReviewController extends Controller
@@ -46,16 +48,39 @@ class ReviewController extends Controller
             ->with('success', 'レビューを投稿しました。');
     }
 
-    // レビュー編集画面を表示する
-    public function edit(Review $review)
+    // 投稿者本人に、レビュー編集画面を表示する
+    public function edit(Review $review): View
     {
-        // 編集画面の表示は、レビュー機能の工程で実装する
+        // ReviewPolicyのupdate()で、投稿者本人かを確認する
+        $this->authorize('update', $review);
+
+        // 編集画面に表示する書籍情報を読み込む
+        $review->load('book');
+
+        // 対象のレビューを、Bladeで使うreviewという名前で渡す
+        return view('reviews.edit', [
+            'review' => $review,
+        ]);
     }
 
-    // レビューの内容を更新する
-    public function update(Request $request, Review $review)
+    // 投稿者本人が、レビューの評価とコメントを更新する
+    public function update(ReviewRequest $request, Review $review): RedirectResponse
     {
-        // 入力チェックと更新処理は、レビュー機能の工程で実装する
+        // ReviewPolicyのupdate()で、投稿者本人かを確認する
+        $this->authorize('update', $review);
+
+        // ReviewRequestの入力チェックを通過した値を取得する
+        $validated = $request->validated();
+
+        // 対象のレビューの評価とコメントを更新する
+        $review->update([
+            'rating' => $validated['rating'],
+            'comment' => $validated['comment'],
+        ]);
+
+        // 更新完了のメッセージを付けて、対象の書籍詳細画面へ移動する
+        return redirect()->route('books.show', $review->book_id)
+            ->with('success', 'レビューを更新しました。');
     }
 
     // レビューを削除する
