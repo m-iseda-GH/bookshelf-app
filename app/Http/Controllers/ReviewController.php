@@ -101,9 +101,19 @@ class ReviewController extends Controller
             ->with('success', 'レビューを削除しました。');
     }
 
-    // レビューへのいいねを登録・解除する
-    public function toggleLike(Request $request, Review $review)
+    // ログイン中のユーザーによる、レビューへのいいねを追加・解除する
+    public function toggleLike(Request $request, Review $review): RedirectResponse
     {
-        // 登録・解除処理は、いいね機能の工程で実装する
+        // ログイン中のユーザーと、URLのレビューのいいねを切り替える
+        $changes = $request->user()->likedReviews()->toggle([$review->id]);
+
+        // 追加されたレビューIDがあれば追加、なければ解除のメッセージにする
+        $message = count($changes['attached']) > 0
+            ? 'いいねしました。'
+            : 'いいねを解除しました。';
+
+        // 完了メッセージを付けて、そのレビューがある書籍詳細画面へ戻る
+        return redirect()->route('books.show', $review->book_id)
+            ->with('success', $message);
     }
 }
